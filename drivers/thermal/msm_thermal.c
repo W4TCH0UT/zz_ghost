@@ -25,6 +25,9 @@
 #include <linux/of.h>
 #include <mach/cpufreq.h>
 
+unsigned int temp_threshold = 85;
+module_param(temp_threshold, int, 0755);
+
 static int enabled;
 static struct msm_thermal_data msm_thermal_info;
 static uint32_t limited_max_freq = MSM_CPUFREQ_NO_LIMIT;
@@ -168,7 +171,7 @@ static void __cpuinit check_temp(struct work_struct *work)
 
 	do_core_control(temp);
 
-	if (temp >= msm_thermal_info.limit_temp_degC) {
+	if (temp >= temp_threshold) {
 		if (limit_idx == limit_idx_low)
 			goto reschedule;
 
@@ -176,7 +179,7 @@ static void __cpuinit check_temp(struct work_struct *work)
 		if (limit_idx < limit_idx_low)
 			limit_idx = limit_idx_low;
 		max_freq = table[limit_idx].frequency;
-	} else if (temp < msm_thermal_info.limit_temp_degC -
+	} else if (temp < temp_threshold -
 		 msm_thermal_info.temp_hysteresis_degC) {
 		if (limit_idx == limit_idx_high)
 			goto reschedule;
